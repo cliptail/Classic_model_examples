@@ -13,6 +13,7 @@ from net import MyResNet18
 import numpy as np
 from torch.optim import lr_scheduler
 from torchvision import datasets, transforms
+import torchvision
 
 data_transform = transforms.Compose([
     transforms.Scale(224),    # 缩放图像大小为 224*224
@@ -32,7 +33,14 @@ test_dataloader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=
 device = "cuda" if torch.cuda.is_available() else 'cpu'
 
 # 调用 net 里定义的模型，如果 GPU 可用则将模型转到 GPU
-model = MyResNet18().to(device)
+# model = MyResNet18().to(device)
+
+# 上述代码首先加载resnet18预训练模型，然后根据训练数据集中的分类数量num_classes修改模型的输出(https://blog.csdn.net/booklijian/article/details/107214762)
+num_classes = 10
+model=torchvision.models.resnet18(pretrained=True)
+num_features=model.fc.in_features
+model.fc=nn.Linear(num_features,num_classes)
+model=model.to(device)
 
 # 定义损失函数（交叉熵损失）
 loss_fn = nn.CrossEntropyLoss()
